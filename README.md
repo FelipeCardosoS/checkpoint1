@@ -1,5 +1,9 @@
 # Projeto Spring Boot - API para Gerenciamento de Pacientes
 
+## Projeto desenvolvido por 
+# Felipe Cardoso RM 99062
+# Carlos Augusto RM 98456
+
 ## Descrição
 
 Este é um projeto desenvolvido com o objetivo de criar uma API RESTful para o gerenciamento de pacientes. Ele permite realizar as operações básicas de CRUD (Criar, Ler, Atualizar e Excluir) para a entidade Paciente.
