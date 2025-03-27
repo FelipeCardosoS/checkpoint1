@@ -1,8 +1,8 @@
 # Projeto Spring Boot - API para Gerenciamento de Pacientes
 
 ## Projeto desenvolvido por 
-# Felipe Cardoso RM 99062
-# Carlos Augusto RM 98456
+### Felipe Cardoso RM 99062
+### Carlos Augusto RM 98456
 
 ## Descrição
 
