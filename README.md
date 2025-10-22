@@ -25,6 +25,15 @@ Este projeto foi desenvolvido utilizando as seguintes tecnologias:
 - Maven (como ferramenta de build)
 - JUnit (para testes)
 
+## Tecnologias Utilizadas
+Este projeto foi desenvolvido utilizando as seguintes tecnologias:
+
+- Spring Boot (para a criação da API RESTful)
+- Java 17 (para a linguagem de programação)
+- Swagger OpenAPI 3 (para documentação interativa da API)
+- Maven (como ferramenta de build)
+- JUnit (para testes)
+
 ## Requisitos
 
 Antes de rodar o projeto, você precisará ter as seguintes dependências instaladas:
