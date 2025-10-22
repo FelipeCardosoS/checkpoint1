@@ -8,13 +8,21 @@
 
 Este é um projeto desenvolvido com o objetivo de criar uma API RESTful para o gerenciamento de pacientes. Ele permite realizar as operações básicas de CRUD (Criar, Ler, Atualizar e Excluir) para a entidade Paciente.
 
+## Adicionado para o checkpoint 2
+
+
+
 ## Funcionalidades
 
-- Criar um paciente
-- Deletar um paciente
-- Atualizar um paciente
-- Buscar lista de todos os pacientes
-- Buscar funcionario por ID
+- Action de Continuous Integration com as tarefas:
+    - Execução de testes unitários.
+    - Empacotamento da aplicação Java com Maven.
+- Action de Continuous Delivery com as tarefas:
+    - Upload da imagem Docker no Docker Hub
+    - Disparar esta Action a partir do evento pull request nas branchs main
+- Action de geração de Tag de Release:
+    - Gerar documentação da versão.
+    - Gerar Release e Tag da versão.
 
 ## Tecnologias Utilizadas
 Este projeto foi desenvolvido utilizando as seguintes tecnologias:

@@ -1,0 +1,35 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - develop
+      - 'feature/*'
+      - 'hotfix/*'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout do código
+        uses: actions/checkout@v4
+
+      - name: ☕ Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: 🧪 Executar testes unitários
+        run: mvn test --batch-mode
+
+      - name: 📦 Empacotar aplicação
+        run: mvn clean package --batch-mode
+
+      - name: 📤 Publicar artefato gerado
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifact
+          path: target/*.jar
