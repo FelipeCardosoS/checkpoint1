@@ -1,0 +1,36 @@
+name: Continuous Delivery
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  docker-build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout do código
+        uses: actions/checkout@v4
+
+      - name: 🔧 Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: 🏗️ Gerar artefato da aplicação
+        run: mvn clean package -DskipTests
+
+      - name: 🐳 Login no Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: 🧱 Construir imagem Docker
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/checkpoint1:latest .
+
+      - name: 📤 Enviar imagem ao Docker Hub
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/checkpoint1:latest
