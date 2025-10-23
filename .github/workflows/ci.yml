@@ -1,35 +1,32 @@
-name: Continuous Integration
+name: CI
 
 on:
   push:
-    branches:
-      - develop
-      - 'feature/*'
-      - 'hotfix/*'
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
 
 jobs:
-  build-and-test:
+  build-test:
     runs-on: ubuntu-latest
-
     steps:
-      - name: 📥 Checkout do código
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: ☕ Configurar Java
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
+          distribution: temurin
           java-version: '17'
-          distribution: 'temurin'
           cache: 'maven'
 
-      - name: 🧪 Executar testes unitários
-        run: mvn test --batch-mode
+      - name: Run tests
+        run: mvn -B -e test
 
-      - name: 📦 Empacotar aplicação
-        run: mvn clean package --batch-mode
+      - name: Package
+        run: mvn -B -e -DskipTests package
 
-      - name: 📤 Publicar artefato gerado
+      - name: Upload JAR
         uses: actions/upload-artifact@v4
         with:
-          name: build-artifact
+          name: app-jar
           path: target/*.jar

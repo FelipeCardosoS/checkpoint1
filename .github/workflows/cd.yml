@@ -1,36 +1,46 @@
-name: Continuous Delivery
+name: CD - Docker Hub
 
 on:
-  pull_request:
-    branches:
-      - main
+  push:
+    branches: [ main ] # publica quando fizer push na main
+  workflow_dispatch:   # permite rodar manualmente
 
 jobs:
-  docker-build-and-push:
+  docker:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: read
     steps:
-      - name: 📥 Checkout do código
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: 🔧 Configurar Java
+      - name: Set up JDK 17 (mvn precisa pro build do jar)
         uses: actions/setup-java@v4
         with:
+          distribution: temurin
           java-version: '17'
-          distribution: 'temurin'
           cache: 'maven'
 
-      - name: 🏗️ Gerar artefato da aplicação
-        run: mvn clean package -DskipTests
+      - name: Maven package (gera JAR)
+        run: mvn -B -e -DskipTests package
 
-      - name: 🐳 Login no Docker Hub
+      - name: Login Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: 🧱 Construir imagem Docker
-        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/checkpoint1:latest .
+      - name: Set image tags
+        id: vars
+        run: |
+          VERSION=${GITHUB_SHA::7}
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "REPO=${{ secrets.DOCKERHUB_USERNAME }}/checkpoint1" >> $GITHUB_OUTPUT
 
-      - name: 📤 Enviar imagem ao Docker Hub
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/checkpoint1:latest
+      - name: Build & Push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ steps.vars.outputs.REPO }}:latest
+            ${{ steps.vars.outputs.REPO }}:${{ steps.vars.outputs.VERSION }}
