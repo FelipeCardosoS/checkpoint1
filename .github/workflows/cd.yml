@@ -5,11 +5,12 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+env:
+  IMAGE_REPO: felipescalesse/cp1-products-api-felipe-carlos
+
 jobs:
   docker:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -27,6 +28,7 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
+          registry: docker.io
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
@@ -47,5 +49,5 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/checkpoint1:${{ steps.vars.outputs.tag1 }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/checkpoint1:${{ steps.vars.outputs.tag2 }}
+            ${{ env.IMAGE_REPO }}:${{ steps.vars.outputs.tag1 }}
+            ${{ env.IMAGE_REPO }}:${{ steps.vars.outputs.tag2 }}
