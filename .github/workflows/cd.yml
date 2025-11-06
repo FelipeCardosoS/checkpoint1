@@ -1,37 +1,51 @@
-name: CD - DockerHub (PR→main)
+name: CD - DockerHub
 
 on:
   pull_request:
-    branches: [ main ]
-   workflow_dispatch: {}
-
-env:
-  IMAGE_REPO: ${{ secrets.DOCKERHUB_USERNAME }}/checkpoint1
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
-  build-and-push:
+  docker:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
           cache: maven
+
       - name: Build JAR
         run: mvn -B -DskipTests package
+
       - uses: docker/setup-buildx-action@v3
-      - name: Login DockerHub
+
+      - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Docker build & push (tag pr-<n> e sha)
+
+      - name: Set tags
+        id: vars
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "tag1=pr-${{ github.event.number }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag1=manual-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+          fi
+          echo "tag2=sha-${GITHUB_SHA}" >> $GITHUB_OUTPUT
+
+      - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./Dockerfile
+          file: Dockerfile
           push: true
           tags: |
-            ${{ env.IMAGE_REPO }}:pr-${{ github.event.number }}
-            ${{ env.IMAGE_REPO }}:sha-${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/checkpoint1:${{ steps.vars.outputs.tag1 }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/checkpoint1:${{ steps.vars.outputs.tag2 }}
