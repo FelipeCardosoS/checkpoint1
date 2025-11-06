@@ -23,49 +23,51 @@ class PacienteControllerIT {
     }
 
     @Test
-    void crudCompleto() {
-        // CREATE
-        var novo = Map.of(
-                "id", null,
-                "nome", "Pedro",
-                "endereco", "Rua X",
-                "bairro", "Centro",
-                "email", "pedro@teste.com",
-                "telefone", "11999999999");
-        var created = rest.postForEntity(url("/pacientes"), novo, Map.class);
-        assertThat(created.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(created.getBody()).isNotNull();
-        var id = Long.valueOf(created.getBody().get("id").toString());
+void crudCompleto() {
+    // CREATE (sem id)
+    Map<String, Object> novo = new java.util.HashMap<>();
+    novo.put("nome", "Pedro");
+    novo.put("endereco", "Rua X");
+    novo.put("bairro", "Centro");
+    novo.put("email", "pedro@teste.com");
+    novo.put("telefone", "11999999999");
 
-        // READ one
-        var got = rest.getForEntity(url("/pacientes/" + id), Map.class);
-        assertThat(got.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(got.getBody().get("nome")).isEqualTo("Pedro");
+    var created = rest.postForEntity(url("/pacientes"), novo, Map.class);
+    assertThat(created.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+    assertThat(created.getBody()).isNotNull();
+    var id = Long.valueOf(created.getBody().get("id").toString());
 
-        // LIST
-        var list = rest.getForEntity(url("/pacientes"), Object.class);
-        assertThat(list.getStatusCode()).isEqualTo(HttpStatus.OK);
+    // READ one
+    var got = rest.getForEntity(url("/pacientes/" + id), Map.class);
+    assertThat(got.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(got.getBody().get("nome")).isEqualTo("Pedro");
 
-        // UPDATE
-        var upd = Map.of(
-                "id", id,
-                "nome", "Pedro Atualizado",
-                "endereco", "Rua X",
-                "bairro", "Centro",
-                "email", "pedro@teste.com",
-                "telefone", "11999999999");
-        var headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        var updated = rest.exchange(url("/pacientes/" + id), HttpMethod.PUT, new HttpEntity<>(upd, headers), Map.class);
-        assertThat(updated.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(updated.getBody().get("nome")).isEqualTo("Pedro Atualizado");
+    // LIST
+    var list = rest.getForEntity(url("/pacientes"), Object.class);
+    assertThat(list.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        // DELETE
-        var deleted = rest.exchange(url("/pacientes/" + id), HttpMethod.DELETE, HttpEntity.EMPTY, Void.class);
-        assertThat(deleted.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+    // UPDATE
+    Map<String, Object> upd = new java.util.HashMap<>(novo);
+    upd.put("id", id);
+    upd.put("nome", "Pedro Atualizado");
 
-        // READ 404
-        var notFound = rest.getForEntity(url("/pacientes/" + id), String.class);
-        assertThat(notFound.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-    }
+    var headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    var updated = rest.exchange(
+            url("/pacientes/" + id),
+            HttpMethod.PUT,
+            new HttpEntity<>(upd, headers),
+            Map.class
+    );
+    assertThat(updated.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(updated.getBody().get("nome")).isEqualTo("Pedro Atualizado");
+
+    // DELETE
+    var deleted = rest.exchange(url("/pacientes/" + id), HttpMethod.DELETE, HttpEntity.EMPTY, Void.class);
+    assertThat(deleted.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+    // READ 404
+    var notFound = rest.getForEntity(url("/pacientes/" + id), String.class);
+    assertThat(notFound.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+}
 }
