@@ -1,52 +1,126 @@
-# Projeto Spring Boot - API para Gerenciamento de Pacientes
+# API de Pacientes — Spring Boot
 
-## Projeto desenvolvido por 
-### Felipe Cardoso RM 99062
-### Carlos Augusto RM 98456
+**Autores:** Felipe Cardoso (RM 99062) · Carlos Augusto (RM 98456)
 
-## Descrição
+Uma API REST simples para gerenciar pacientes (CRUD completo). Projeto com **tests de integração**, **CI/CD no GitHub Actions** e **imagem Docker publicada no Docker Hub**.
 
-Este é um projeto desenvolvido com o objetivo de criar uma API RESTful para o gerenciamento de pacientes. Ele permite realizar as operações básicas de CRUD (Criar, Ler, Atualizar e Excluir) para a entidade Paciente.
+---
 
-## Adicionado para o checkpoint 2
+## ✨ O que está pronto
+- **CRUD de Paciente** (`/pacientes`): `GET` lista e por id, `POST`, `PUT`, `DELETE`.
+- **Swagger/OpenAPI**: documentação em `http://localhost:8080/swagger-ui.html`.
+- **Testes de Integração (IT)**: validam o fluxo completo do CRUD.
+- **CI**: build Maven + testes rodando em `develop` e `main`.
+- **CD**: 
+  - Integração (roda os ITs).
+  - Publicação no **Docker Hub** em pushes/PRs para `develop` e `main`.
+  - Na `main`, publica tag estável (ex.: `latest`).
 
+> Repositório da imagem: `felipescalesse/cp1-products-api-felipe-carlos`
 
+---
 
-## Funcionalidades
+## 🚀 Como rodar local (Maven)
+Requisitos: **JDK 17** e **Maven 3.9+**.
 
-- Action de Continuous Integration com as tarefas:
-    - Execução de testes unitários.
-    - Empacotamento da aplicação Java com Maven.
-- Action de Continuous Delivery com as tarefas:
-    - Upload da imagem Docker no Docker Hub
-    - Disparar esta Action a partir do evento pull request nas branchs main
-- Action de geração de Tag de Release:
-    - Gerar documentação da versão.
-    - Gerar Release e Tag da versão.
+```bash
+# build + testes
+mvn clean verify
 
-## Tecnologias Utilizadas
-Este projeto foi desenvolvido utilizando as seguintes tecnologias:
+# executar
+mvn spring-boot:run
+# app em http://localhost:8080
+```
 
-- Spring Boot (para a criação da API RESTful)
-- Java 17 (para a linguagem de programação)
-- Swagger OpenAPI 3 (para documentação interativa da API)
-- Maven (como ferramenta de build)
-- JUnit (para testes)
+Abrir o **Swagger**:
+```
+http://localhost:8080/swagger-ui.html
+```
 
-## Tecnologias Utilizadas
-Este projeto foi desenvolvido utilizando as seguintes tecnologias:
+---
 
-- Spring Boot (para a criação da API RESTful)
-- Java 17 (para a linguagem de programação)
-- Swagger OpenAPI 3 (para documentação interativa da API)
-- Maven (como ferramenta de build)
-- JUnit (para testes)
+## 🐳 Rodando com Docker
+> Requer Docker Desktop/Engine instalado.
 
-## Requisitos
+Baixar a imagem (ajuste a tag se necessário):
+```bash
+docker pull felipescalesse/cp1-products-api-felipe-carlos:latest
+```
 
-Antes de rodar o projeto, você precisará ter as seguintes dependências instaladas:
+Subir o container:
+```bash
+docker run --rm -p 8080:8080 felipescalesse/cp1-products-api-felipe-carlos:latest
+```
 
-- JDK 17 ou superior
-- Maven 3.x ou superior
-- IDE (IntelliJ, Eclipse, ou outra de sua preferência)
+---
 
+## 🔗 Endpoints principais
+```
+GET    /pacientes
+GET    /pacientes/{id}
+POST   /pacientes
+PUT    /pacientes/{id}
+DELETE /pacientes/{id}
+```
+
+### Exemplo de payload (POST/PUT)
+```json
+{
+  "nome": "Pedro",
+  "endereco": "Rua X",
+  "bairro": "Centro",
+  "email": "pedro@teste.com",
+  "telefone": "11999999999"
+}
+```
+
+---
+
+## 🧪 Testes de Integração (IT)
+Os testes vivem em `src/test/java/.../controller/PacienteControllerIT.java` e cobrem:
+- criação → leitura → listagem → atualização → exclusão → leitura 404
+
+Execute somente os testes:
+```bash
+mvn -Dtest=PacienteControllerIT test
+```
+
+---
+
+## ⚙️ CI/CD (GitHub Actions)
+Workflows configurados:
+- **CI - Maven**: Build + testes (em `develop` e `main`).
+- **CD - Integração (CRUD)**: Executa os testes de integração a cada push/PR.
+- **CD - DockerHub**: Build e push da imagem para o Docker Hub.
+  - Em `develop`: publica com tag baseada no commit.
+  - Em `main`: publica também a tag `latest`.
+
+> Dica: proteger a branch `main` exigindo CI verde antes de merge.
+
+---
+
+## 🧩 Tecnologias
+- **Java 17** · **Spring Boot 3** · **Spring Web** · **Spring Data JPA (H2 em memória para IT)**
+- **JUnit 5** · **AssertJ** · **springdoc-openapi** (Swagger)  
+- **Maven** · **Docker** · **GitHub Actions**
+
+---
+
+## 📁 Estrutura (essencial)
+```
+src
+ ├─ main
+ │   └─ java/br/com/fiap/checkpoint1
+ │       ├─ controller/PacienteController.java
+ │       ├─ dto/PacienteDTO.java
+ │       ├─ service/PacienteService.java
+ │       ├─ service/PacienteServiceImpl.java
+ │       └─ Checkpoint1Application.java
+ └─ test
+     └─ java/br/com/fiap/checkpoint1/controller/PacienteControllerIT.java
+```
+
+---
+
+## 📄 Licença
+Uso educacional — FIAP (checkpoint).
