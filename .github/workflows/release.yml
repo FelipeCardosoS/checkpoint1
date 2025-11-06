@@ -1,32 +1,68 @@
-name: Release
+name: Release - Tag + Notas + Docker
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Versão (ex: v1.0.0)'
-        required: true
   push:
-    tags:
-      - 'v*.*.*'
+    branches: [ main ]
+
+permissions:
+  contents: write
 
 jobs:
-  create-release:
+  release:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
-
-      - name: Changelog (últimos commits)
-        id: changelog
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - name: Package (com Javadoc opcional)
         run: |
-          echo "## Changes" > CHANGELOG.md
-          git log -10 --pretty=format:"- %s (%h)" >> CHANGELOG.md
-
-      - name: Create Release
+          mvn -B -DskipTests package
+          mvn -B -q -DskipTests javadoc:javadoc || true
+      - name: Compute tag (vYYYY.MM.DD.HHMM)
+        id: dt
+        run: echo "tag=v$(date +'%Y.%m.%d.%H%M')" >> $GITHUB_OUTPUT
+      - name: Changelog desde a última tag
+        run: |
+          LAST=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST" ]; then
+            git log --pretty=format:'- %s (%h)' > CHANGELOG.md
+          else
+            git log "$LAST"..HEAD --pretty=format:'- %s (%h)' > CHANGELOG.md
+          fi
+      - name: Criar Tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.dt.outputs.tag }}" -m "Release ${{ steps.dt.outputs.tag }}"
+          git push origin "${{ steps.dt.outputs.tag }}"
+      - name: Criar GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.event.inputs.version || github.ref_name }}
-          name: ${{ github.event.inputs.version || github.ref_name }}
+          tag_name: ${{ steps.dt.outputs.tag }}
+          name: Release ${{ steps.dt.outputs.tag }}
           body_path: CHANGELOG.md
+          files: |
+            target/*.jar
+            target/site/apidocs/**/*
+      - uses: docker/setup-buildx-action@v3
+      - name: Login DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Docker build & push (tag + latest)
+        env:
+          IMAGE_REPO: ${{ secrets.DOCKERHUB_USERNAME }}/checkpoint1
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_REPO }}:${{ steps.dt.outputs.tag }}
+            ${{ env.IMAGE_REPO }}:latest
